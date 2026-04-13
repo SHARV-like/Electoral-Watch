@@ -257,7 +257,7 @@ const Dashboard = () => {
                 📍 {comp.location} | 📅 {new Date(comp.createdAt).toLocaleDateString()} | 🕒 {new Date(comp.createdAt).toLocaleTimeString([], { hour: '2-digit', minute: '2-digit' })}
               </div>
               {comp.evidence && (
-                <a href={`${API_BASE_URL}${comp.evidence}`} target="_blank" rel="noopener noreferrer" className="btn" style={{ background: 'var(--primary)', color: 'white', opacity: 0.9 }}>View Access Evidence Attachment</a>
+                <a href={comp.evidence} target="_blank" rel="noopener noreferrer" className="btn" style={{ background: 'var(--primary)', color: 'white', opacity: 0.9 }}>View Access Evidence Attachment</a>
               )}
             </div>
           ))}

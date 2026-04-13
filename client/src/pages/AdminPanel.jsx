@@ -103,7 +103,7 @@ const AdminPanel = () => {
                   </div>
                   {comp.evidence && (
                     <div style={{ marginTop: '10px' }}>
-                      <a href={`${API_BASE_URL}${comp.evidence}`} target="_blank" rel="noopener noreferrer" style={{ fontSize: '0.8rem', textDecoration: 'underline', color: 'var(--primary)' }}>Access Encrypted Upload Evidence</a>
+                      <a href={comp.evidence} target="_blank" rel="noopener noreferrer" style={{ fontSize: '0.8rem', textDecoration: 'underline', color: 'var(--primary)' }}>Access Encrypted Upload Evidence</a>
                     </div>
                   )}
                 </div>

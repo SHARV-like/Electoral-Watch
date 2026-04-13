@@ -1,41 +1,24 @@
 const multer = require('multer');
-const path = require('path');
-const fs = require('fs');
+const { CloudinaryStorage } = require('multer-storage-cloudinary');
+const cloudinary = require('cloudinary').v2;
 
-// Verify uploads folder exists locally, create if it doesn't
-const uploadDir = path.join(__dirname, '../../uploads');
-if (!fs.existsSync(uploadDir)) {
-    fs.mkdirSync(uploadDir);
-}
+// Configure Cloudinary with environment variables
+cloudinary.config({
+    cloud_name: process.env.CLOUDINARY_CLOUD_NAME,
+    api_key: process.env.CLOUDINARY_API_KEY,
+    api_secret: process.env.CLOUDINARY_API_SECRET
+});
 
-// Storage configurations
-const storage = multer.diskStorage({
-    destination(req, file, cb) {
-        cb(null, uploadDir); 
-    },
-    filename(req, file, cb) {
-        cb(null, `evidence-${Date.now()}${path.extname(file.originalname)}`);
+// Cloudinary storage engine for Multer
+const storage = new CloudinaryStorage({
+    cloudinary: cloudinary,
+    params: {
+        folder: 'electoral-watch-evidence', // All uploads go into this Cloudinary folder
+        allowed_formats: ['jpg', 'jpeg', 'png', 'mp4', 'mkv'],
+        resource_type: 'auto' // Automatically detect image vs video
     }
 });
 
-// File validator rules
-function checkFileType(file, cb) {
-    const filetypes = /jpg|jpeg|png|mp4|mkv/; 
-    const extname = filetypes.test(path.extname(file.originalname).toLowerCase());
-    const mimetype = filetypes.test(file.mimetype);
-
-    if (extname && mimetype) {
-        return cb(null, true);
-    } else {
-        cb('Error: System accepts Images and Videos only!');
-    }
-}
-
-const upload = multer({
-    storage,
-    fileFilter: function (req, file, cb) {
-        checkFileType(file, cb);
-    }
-});
+const upload = multer({ storage });
 
 module.exports = upload;

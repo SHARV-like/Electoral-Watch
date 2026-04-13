@@ -7,8 +7,8 @@ const createComplaint = async (req, res) => {
     const { title, description, location, type } = req.body;
 
     try {
-        // If image/video is uploaded via multer, its path is stored here
-        const evidence = req.file ? `/uploads/${req.file.filename}` : null;
+        // Cloudinary returns the full CDN URL in req.file.path
+        const evidence = req.file ? req.file.path : null;
 
         const complaint = await Complaint.create({
             title,
