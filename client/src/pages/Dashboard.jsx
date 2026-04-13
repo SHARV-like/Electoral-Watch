@@ -286,6 +286,25 @@ const Dashboard = () => {
               ) : comp.status !== 'pending' && !comp.evidence && (
                 <div style={{ fontSize: '0.8rem', color: 'var(--text-secondary)', fontStyle: 'italic', marginTop: '4px' }}>🔒 Evidence upload locked — complaint {comp.status}</div>
               )}
+
+              {/* Delete Complaint */}
+              <button 
+                className="btn" 
+                onClick={async () => {
+                  if (!window.confirm('⚠️ Are you sure? This complaint will be permanently deleted and cannot be recovered.')) return;
+                  try {
+                    await axios.delete(`${API_BASE_URL}/api/complaints/${comp._id}`, {
+                      headers: { 'Authorization': `Bearer ${user.token}` }
+                    });
+                    setComplaints(prev => prev.filter(c => c._id !== comp._id));
+                  } catch (err) {
+                    alert(err.response?.data?.message || 'Delete failed');
+                  }
+                }}
+                style={{ marginTop: '8px', background: 'transparent', border: '1px solid rgba(239,71,111,0.3)', color: 'var(--danger)', fontSize: '0.85rem', padding: '8px', width: '100%', opacity: 0.7 }}
+              >
+                🗑️ Delete Report
+              </button>
             </div>
           ))}
         </div>
