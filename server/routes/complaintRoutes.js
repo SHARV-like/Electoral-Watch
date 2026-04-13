@@ -1,6 +1,6 @@
 const express = require('express');
 const router = express.Router();
-const { createComplaint, getComplaints, updateComplaintStatus } = require('../controllers/complaintController');
+const { createComplaint, getComplaints, updateComplaintStatus, updateComplaintEvidence } = require('../controllers/complaintController');
 const { protect, admin } = require('../middleware/authMiddleware');
 const upload = require('../middleware/uploadMiddleware');
 
@@ -12,5 +12,9 @@ router.route('/')
 // Update Status Base: /api/complaints/:id/status
 router.route('/:id/status')
     .put(protect, admin, updateComplaintStatus);
+
+// Upload/Replace Evidence: /api/complaints/:id/evidence
+router.route('/:id/evidence')
+    .put(protect, upload.single('evidence'), updateComplaintEvidence);
 
 module.exports = router;

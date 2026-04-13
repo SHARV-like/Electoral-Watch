@@ -70,8 +70,44 @@ const updateComplaintStatus = async (req, res) => {
     }
 };
 
+// @desc    Upload or replace evidence on an existing complaint
+// @route   PUT /api/complaints/:id/evidence
+// @access  Private (Owner only, while status is 'pending')
+const updateComplaintEvidence = async (req, res) => {
+    try {
+        const complaint = await Complaint.findById(req.params.id);
+
+        if (!complaint) {
+            return res.status(404).json({ message: 'Complaint not found' });
+        }
+
+        // Only the original reporter can update their own evidence
+        if (complaint.user.toString() !== req.user._id.toString()) {
+            return res.status(403).json({ message: 'Not authorized to modify this complaint' });
+        }
+
+        // Lock evidence editing once admin has reviewed
+        if (complaint.status !== 'pending') {
+            return res.status(403).json({ message: `Evidence is locked — complaint has been ${complaint.status} by admin` });
+        }
+
+        if (!req.file) {
+            return res.status(400).json({ message: 'No file uploaded' });
+        }
+
+        // Cloudinary returns the full CDN URL in req.file.path
+        complaint.evidence = req.file.path;
+        const updatedComplaint = await complaint.save();
+
+        res.json(updatedComplaint);
+    } catch (error) {
+        res.status(500).json({ message: error.message });
+    }
+};
+
 module.exports = {
     createComplaint,
     getComplaints,
-    updateComplaintStatus
+    updateComplaintStatus,
+    updateComplaintEvidence
 };

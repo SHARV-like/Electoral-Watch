@@ -13,6 +13,7 @@ const Dashboard = () => {
   const [isMalpracticesModalOpen, setIsMalpracticesModalOpen] = useState(false);
   const [isDemoModalOpen, setIsDemoModalOpen] = useState(false);
   const [selectedDemoImage, setSelectedDemoImage] = useState(null);
+  const [uploadingId, setUploadingId] = useState(null); // tracks which complaint is currently uploading
   const malpractices = [
     { title: "Bribery / Buying Votes", shortDesc: "Exchanging money/gifts for votes.", detail: "Bribery involves <b style='color: var(--highlighted-text)'>offering, giving, receiving, or soliciting something of value</b> for the purpose of influencing the action of a voter. This includes <b style='color: var(--highlighted-text)'>cash handouts, gifts, liquor, or promises of future benefits</b> in exchange for voting a certain way. It directly compromises the democratic process." },
     { title: "Booth Capturing", shortDesc: "Physical takeover of a polling station.", detail: "Booth capturing refers to the <b style='color: var(--highlighted-text)'>physical takeover of a polling station by party loyalists or armed thugs</b> to cast false votes in favor of their candidate, preventing legitimate voters from exercising their right. It's considered a <b style='color: var(--highlighted-text)'>severe criminal electoral offense</b>." },
@@ -245,9 +246,9 @@ const Dashboard = () => {
         <div style={{ display: 'grid', gridTemplateColumns: 'repeat(auto-fill, minmax(300px, 1fr))', gap: '20px' }}>
           {complaints.map((comp) => (
             <div key={comp._id} className="card animate-fade-in" style={{ display: 'flex', flexDirection: 'column', padding: '20px' }}>
-              <div className="flex justify-between items-center" style={{ marginBottom: '10px' }}>
-                <span style={{ fontSize: '0.8rem', background: 'rgba(255,255,255,0.1)', padding: '4px 10px', borderRadius: '4px' }}>{comp.type.replace('_', ' ').toUpperCase()}</span>
-                <span style={{ fontSize: '0.8rem', color: getStatusColor(comp.status), fontWeight: 'bold' }}>• {comp.status.toUpperCase()}</span>
+              <div className="flex justify-between items-center" style={{ marginBottom: '10px', gap: '10px', flexWrap: 'wrap' }}>
+                <span style={{ fontSize: '0.8rem', background: 'rgba(255,255,255,0.1)', padding: '4px 10px', borderRadius: '4px', maxWidth: '70%', lineHeight: '1.4' }}>{comp.type.replace('_', ' ').toUpperCase()}</span>
+                <span style={{ fontSize: '0.8rem', color: getStatusColor(comp.status), fontWeight: 'bold', whiteSpace: 'nowrap' }}>• {comp.status.toUpperCase()}</span>
               </div>
               <h3 style={{ fontSize: '1.2rem', marginBottom: '10px' }}>{comp.title}</h3>
               <p style={{ color: 'var(--text-secondary)', flex: 1, fontSize: '0.9rem', marginBottom: '15px' }}>
@@ -257,7 +258,33 @@ const Dashboard = () => {
                 📍 {comp.location} | 📅 {new Date(comp.createdAt).toLocaleDateString()} | 🕒 {new Date(comp.createdAt).toLocaleTimeString([], { hour: '2-digit', minute: '2-digit' })}
               </div>
               {comp.evidence && (
-                <a href={comp.evidence} target="_blank" rel="noopener noreferrer" className="btn" style={{ background: 'var(--primary)', color: 'white', opacity: 0.9 }}>View Access Evidence Attachment</a>
+                <a href={comp.evidence} target="_blank" rel="noopener noreferrer" className="btn" style={{ background: 'var(--primary)', color: 'white', opacity: 0.9, marginBottom: '8px' }}>View Evidence Attachment</a>
+              )}
+
+              {/* Evidence Upload/Replace — only while pending */}
+              {comp.status === 'pending' ? (
+                <label className="btn" style={{ cursor: 'pointer', background: comp.evidence ? 'rgba(255,209,102,0.15)' : 'rgba(6,214,160,0.15)', border: `1px solid ${comp.evidence ? 'var(--warning)' : 'var(--success)'}`, color: comp.evidence ? 'var(--warning)' : 'var(--success)', display: 'flex', alignItems: 'center', justifyContent: 'center', gap: '6px', opacity: uploadingId === comp._id ? 0.6 : 1 }}>
+                  {uploadingId === comp._id ? '⏳ Uploading...' : comp.evidence ? '🔄 Replace Evidence' : '📎 Attach Evidence'}
+                  <input type="file" accept="image/*,video/*" style={{ display: 'none' }} disabled={uploadingId === comp._id} onChange={async (e) => {
+                    const file = e.target.files[0];
+                    if (!file) return;
+                    setUploadingId(comp._id);
+                    try {
+                      const formData = new FormData();
+                      formData.append('evidence', file);
+                      const res = await axios.put(`${API_BASE_URL}/api/complaints/${comp._id}/evidence`, formData, {
+                        headers: { 'Authorization': `Bearer ${user.token}`, 'Content-Type': 'multipart/form-data' }
+                      });
+                      setComplaints(prev => prev.map(c => c._id === comp._id ? { ...c, evidence: res.data.evidence } : c));
+                    } catch (err) {
+                      alert(err.response?.data?.message || 'Upload failed');
+                    }
+                    setUploadingId(null);
+                    e.target.value = '';
+                  }} />
+                </label>
+              ) : comp.status !== 'pending' && !comp.evidence && (
+                <div style={{ fontSize: '0.8rem', color: 'var(--text-secondary)', fontStyle: 'italic', marginTop: '4px' }}>🔒 Evidence upload locked — complaint {comp.status}</div>
               )}
             </div>
           ))}
