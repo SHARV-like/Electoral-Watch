@@ -115,8 +115,13 @@ const ReportForm = () => {
             
             <div className="flex gap-10 flex-mobile-col" style={{ justifyContent: 'center', marginBottom: '15px' }}>
               <label className="btn btn-primary mobile-full-width" style={{ cursor: 'pointer', background: 'var(--danger)', display: 'inline-flex', alignItems: 'center', justifyContent: 'center', gap: '8px' }}>
-                📸 Open Camera
-                <input type="file" accept="image/*,video/*" capture="environment" style={{ display: 'none' }} onChange={handleFileChange} />
+                📸 Capture Photo
+                <input type="file" accept="image/*" capture="environment" style={{ display: 'none' }} onChange={handleFileChange} />
+              </label>
+
+              <label className="btn mobile-full-width" style={{ cursor: 'pointer', background: 'rgba(239, 71, 111, 0.3)', border: '1px solid var(--danger)', display: 'inline-flex', alignItems: 'center', justifyContent: 'center', gap: '8px', color: 'var(--text-primary)' }}>
+                🎥 Record Video
+                <input type="file" accept="video/*" capture="environment" style={{ display: 'none' }} onChange={handleFileChange} />
               </label>
 
               <label className="btn mobile-full-width" style={{ cursor: 'pointer', background: 'var(--surface-color)', border: '1px solid var(--border)', display: 'inline-flex', alignItems: 'center', justifyContent: 'center', gap: '8px', color: 'var(--text-primary)' }}>

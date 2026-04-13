@@ -84,17 +84,16 @@ function App() {
         {/* State passed to the Sidebar component */}
         <Sidebar isOpen={isSidebarOpen} setIsOpen={setIsSidebarOpen} />
         
-        <main className={`main-content animate-fade-in ${isSidebarOpen ? '' : 'expanded'}`}>
-          
-          {/* Floating Floating Action Button (FAB) acting as the Sidebar Toggle */}
-          <button 
-            className={`sidebar-toggle-btn ${isSidebarOpen ? 'open' : ''}`}
-            onClick={() => setIsSidebarOpen(!isSidebarOpen)}
-            title="Toggle Sidebar"
-          >
-            {isSidebarOpen ? '✖' : '☰'}
-          </button>
+        {/* Floating Action Button — placed OUTSIDE main to prevent fixed-position breakage on mobile */}
+        <button 
+          className={`sidebar-toggle-btn ${isSidebarOpen ? 'open' : ''}`}
+          onClick={() => setIsSidebarOpen(!isSidebarOpen)}
+          title="Toggle Sidebar"
+        >
+          {isSidebarOpen ? '✖' : '☰'}
+        </button>
 
+        <main className={`main-content animate-fade-in ${isSidebarOpen ? '' : 'expanded'}`}>
           <Routes>
             <Route path="/" element={<About />} />
             <Route path="/login" element={<Login />} />
