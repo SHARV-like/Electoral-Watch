@@ -11,7 +11,11 @@ const app = express();
 connectDB();
 
 // Global Middleware
-app.use(cors());
+app.use(cors({
+    origin: ['http://localhost:5173', 'https://electoral-watch-dashboard.onrender.com'], // Replace with your exact frontend Render URL
+    credentials: true 
+}));
+
 app.use(express.json()); 
 app.use(express.urlencoded({ extended: true })); 
 
