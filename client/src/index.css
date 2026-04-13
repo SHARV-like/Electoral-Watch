@@ -66,6 +66,7 @@ a:hover {
   top: 0;
   z-index: 1000;
   transition: transform 0.3s cubic-bezier(0.4, 0, 0.2, 1);
+  overflow: hidden; /* Prevent sidebar itself from scrolling */
 }
 
 .sidebar.closed {
@@ -86,6 +87,8 @@ a:hover {
   flex-direction: column;
   gap: 8px;
   flex: 1;
+  overflow-y: auto; /* Nav links scroll independently */
+  min-height: 0;    /* Required for flex child scrolling */
 }
 
 .sidebar-link {
