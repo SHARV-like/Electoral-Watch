@@ -14,6 +14,7 @@ const Dashboard = () => {
   const [isDemoModalOpen, setIsDemoModalOpen] = useState(false);
   const [selectedDemoImage, setSelectedDemoImage] = useState(null);
   const [uploadingId, setUploadingId] = useState(null); // tracks which complaint is currently uploading
+  const [selectedComplaint, setSelectedComplaint] = useState(null);
   const malpractices = [
     { title: "Bribery / Buying Votes", shortDesc: "Exchanging money/gifts for votes.", detail: "Bribery involves <b style='color: var(--highlighted-text)'>offering, giving, receiving, or soliciting something of value</b> for the purpose of influencing the action of a voter. This includes <b style='color: var(--highlighted-text)'>cash handouts, gifts, liquor, or promises of future benefits</b> in exchange for voting a certain way. It directly compromises the democratic process." },
     { title: "Booth Capturing", shortDesc: "Physical takeover of a polling station.", detail: "Booth capturing refers to the <b style='color: var(--highlighted-text)'>physical takeover of a polling station by party loyalists or armed thugs</b> to cast false votes in favor of their candidate, preventing legitimate voters from exercising their right. It's considered a <b style='color: var(--highlighted-text)'>severe criminal electoral offense</b>." },
@@ -65,6 +66,75 @@ const Dashboard = () => {
 
   return (
     <div>
+      {/* ── Complaint Detail Modal ── */}
+      {selectedComplaint && (
+        <div style={{
+          position: 'fixed', top: 0, left: 0, width: '100vw', height: '100vh',
+          background: 'rgba(0,0,0,0.6)', backdropFilter: 'blur(8px)',
+          display: 'flex', justifyContent: 'center', alignItems: 'center', zIndex: 3000
+        }} onClick={() => setSelectedComplaint(null)}>
+          <div className="card animate-fade-in" style={{ maxWidth: '950px', width: '95%', maxHeight: '90vh', overflowY: 'auto', position: 'relative', background: 'var(--surface-color)', border: '1px solid var(--border)', zIndex: 3001, padding: '30px' }} onClick={e => e.stopPropagation()}>
+            <button onClick={() => setSelectedComplaint(null)} style={{ position: 'absolute', top: '15px', left: '15px', background: 'transparent', border: 'none', color: 'var(--text-secondary)', fontSize: '0.9rem', cursor: 'pointer' }}>← Back to Gallery</button>
+            <button onClick={() => setSelectedComplaint(null)} style={{ position: 'absolute', top: '15px', right: '15px', background: 'transparent', border: 'none', color: 'var(--text-secondary)', fontSize: '1.2rem', cursor: 'pointer' }}>✖</button>
+
+            <div style={{ display: 'flex', gap: '30px', flexWrap: 'wrap', marginTop: '20px' }}>
+              {/* Left Side: Evidence Image */}
+              <div style={{ flex: '1 1 300px' }}>
+                {selectedComplaint.evidence ? (
+                  /\.(mp4|webm|mov|avi)$/i.test(selectedComplaint.evidence) ? (
+                    <video src={selectedComplaint.evidence} controls style={{ width: '100%', maxHeight: '450px', borderRadius: '8px', border: '1px solid var(--border)', background: 'rgba(0,0,0,0.3)' }} />
+                  ) : (
+                    <img src={selectedComplaint.evidence} alt="Evidence" style={{ width: '100%', height: 'auto', maxHeight: '450px', objectFit: 'contain', borderRadius: '8px', border: '1px solid var(--border)', background: 'rgba(0,0,0,0.3)' }} />
+                  )
+                ) : (
+                  <div style={{ width: '100%', height: '300px', borderRadius: '8px', border: '1px solid var(--border)', background: 'rgba(0,0,0,0.3)', display: 'flex', flexDirection: 'column', alignItems: 'center', justifyContent: 'center', color: 'var(--text-secondary)' }}>
+                    <span style={{ fontSize: '3rem', marginBottom: '10px', opacity: 0.4 }}>📷</span>
+                    <span style={{ fontSize: '0.9rem' }}>No evidence attached</span>
+                  </div>
+                )}
+              </div>
+
+              {/* Right Side: Structured Report Data */}
+              <div style={{ flex: '2 1 400px', display: 'flex', flexDirection: 'column', gap: '20px' }}>
+                {/* Incident Headline */}
+                <div style={{ background: 'rgba(0,0,0,0.2)', padding: '20px', borderRadius: '8px', border: '1px solid var(--border)' }}>
+                  <h4 style={{ color: 'var(--text-secondary)', fontSize: '0.85rem', textTransform: 'uppercase', letterSpacing: '1px', marginBottom: '8px' }}>Incident Headline</h4>
+                  <p style={{ color: 'var(--text-primary)', fontSize: '1.2rem', fontWeight: '500', margin: 0 }}>{selectedComplaint.title}</p>
+                </div>
+
+                {/* Location + Classification side by side */}
+                <div style={{ display: 'flex', gap: '20px', flexWrap: 'wrap' }}>
+                  <div style={{ flex: 1, background: 'rgba(0,0,0,0.2)', padding: '20px', borderRadius: '8px', border: '1px solid var(--border)', minWidth: '180px' }}>
+                    <h4 style={{ color: 'var(--text-secondary)', fontSize: '0.85rem', textTransform: 'uppercase', letterSpacing: '1px', marginBottom: '8px' }}>Location Details</h4>
+                    <p style={{ color: 'var(--text-primary)', margin: 0, fontSize: '1rem' }}>{selectedComplaint.location}</p>
+                  </div>
+                  <div style={{ flex: 1, background: 'rgba(0,0,0,0.2)', padding: '20px', borderRadius: '8px', border: '1px solid var(--border)', minWidth: '180px' }}>
+                    <h4 style={{ color: 'var(--text-secondary)', fontSize: '0.85rem', textTransform: 'uppercase', letterSpacing: '1px', marginBottom: '8px' }}>Malpractice Classification</h4>
+                    <p style={{ color: 'var(--danger)', fontWeight: 'bold', margin: 0, fontSize: '1rem' }}>{selectedComplaint.type.replace('_', ' ')}</p>
+                  </div>
+                </div>
+
+                {/* Full Description */}
+                <div style={{ background: 'rgba(0,0,0,0.2)', padding: '20px', borderRadius: '8px', border: '1px solid var(--border)', flex: 1 }}>
+                  <h4 style={{ color: 'var(--text-secondary)', fontSize: '0.85rem', textTransform: 'uppercase', letterSpacing: '1px', marginBottom: '12px' }}>Detailed Description of Events</h4>
+                  <p style={{ color: 'var(--text-secondary)', fontSize: '0.95rem', lineHeight: 1.6, margin: 0 }}>{selectedComplaint.description}</p>
+                </div>
+
+                {/* Status + Meta footer */}
+                <div style={{ display: 'flex', gap: '20px', flexWrap: 'wrap', alignItems: 'center' }}>
+                  <div style={{ background: 'rgba(0,0,0,0.2)', padding: '12px 20px', borderRadius: '8px', border: '1px solid var(--border)' }}>
+                    <span style={{ fontSize: '0.8rem', color: 'var(--text-secondary)', marginRight: '8px' }}>STATUS:</span>
+                    <span style={{ fontSize: '0.9rem', fontWeight: 'bold', color: getStatusColor(selectedComplaint.status) }}>{selectedComplaint.status.toUpperCase()}</span>
+                  </div>
+                  <div style={{ fontSize: '0.85rem', color: 'var(--text-secondary)' }}>
+                    📅 {new Date(selectedComplaint.createdAt).toLocaleDateString()} | 🕒 {new Date(selectedComplaint.createdAt).toLocaleTimeString([], { hour: '2-digit', minute: '2-digit' })}
+                  </div>
+                </div>
+              </div>
+            </div>
+          </div>
+        </div>
+      )}
       {/* Dynamic Pop-up Modal */}
       {selectedMalpractice && (
         <div style={{
@@ -245,7 +315,7 @@ const Dashboard = () => {
       ) : (
         <div style={{ display: 'grid', gridTemplateColumns: 'repeat(auto-fill, minmax(300px, 1fr))', gap: '20px' }}>
           {complaints.map((comp) => (
-            <div key={comp._id} className="card animate-fade-in" style={{ display: 'flex', flexDirection: 'column', padding: '20px' }}>
+            <div key={comp._id} className="card animate-fade-in" style={{ display: 'flex', flexDirection: 'column', padding: '20px', cursor: 'pointer', transition: 'transform 0.2s ease, border-color 0.2s ease' }} onClick={() => setSelectedComplaint(comp)} onMouseOver={e => e.currentTarget.style.transform = 'translateY(-3px)'} onMouseOut={e => e.currentTarget.style.transform = 'translateY(0)'}>
               <div className="flex justify-between items-center" style={{ marginBottom: '10px', gap: '10px', flexWrap: 'wrap' }}>
                 <span style={{ fontSize: '0.8rem', background: 'rgba(255,255,255,0.1)', padding: '4px 10px', borderRadius: '4px', maxWidth: '70%', lineHeight: '1.4' }}>{comp.type.replace('_', ' ').toUpperCase()}</span>
                 <span style={{ fontSize: '0.8rem', color: getStatusColor(comp.status), fontWeight: 'bold', whiteSpace: 'nowrap' }}>• {comp.status.toUpperCase()}</span>
@@ -258,12 +328,12 @@ const Dashboard = () => {
                 📍 {comp.location} | 📅 {new Date(comp.createdAt).toLocaleDateString()} | 🕒 {new Date(comp.createdAt).toLocaleTimeString([], { hour: '2-digit', minute: '2-digit' })}
               </div>
               {comp.evidence && (
-                <a href={comp.evidence} target="_blank" rel="noopener noreferrer" className="btn" style={{ background: 'var(--primary)', color: 'white', opacity: 0.9, marginBottom: '8px' }}>View Evidence Attachment</a>
+                <a href={comp.evidence} target="_blank" rel="noopener noreferrer" className="btn" style={{ background: 'var(--primary)', color: 'white', opacity: 0.9, marginBottom: '8px' }} onClick={e => e.stopPropagation()}>View Evidence Attachment</a>
               )}
 
               {/* Evidence Upload/Replace — only while pending */}
               {comp.status === 'pending' ? (
-                <label className="btn" style={{ cursor: 'pointer', background: comp.evidence ? 'rgba(255,209,102,0.15)' : 'rgba(6,214,160,0.15)', border: `1px solid ${comp.evidence ? 'var(--warning)' : 'var(--success)'}`, color: comp.evidence ? 'var(--warning)' : 'var(--success)', display: 'flex', alignItems: 'center', justifyContent: 'center', gap: '6px', opacity: uploadingId === comp._id ? 0.6 : 1 }}>
+                <label className="btn" style={{ cursor: 'pointer', background: comp.evidence ? 'rgba(255,209,102,0.15)' : 'rgba(6,214,160,0.15)', border: `1px solid ${comp.evidence ? 'var(--warning)' : 'var(--success)'}`, color: comp.evidence ? 'var(--warning)' : 'var(--success)', display: 'flex', alignItems: 'center', justifyContent: 'center', gap: '6px', opacity: uploadingId === comp._id ? 0.6 : 1 }} onClick={e => e.stopPropagation()}>
                   {uploadingId === comp._id ? '⏳ Uploading...' : comp.evidence ? '🔄 Replace Evidence' : '📎 Attach Evidence'}
                   <input type="file" accept="image/*,video/*" style={{ display: 'none' }} disabled={uploadingId === comp._id} onChange={async (e) => {
                     const file = e.target.files[0];
@@ -290,7 +360,8 @@ const Dashboard = () => {
               {/* Delete Complaint */}
               <button 
                 className="btn" 
-                onClick={async () => {
+                onClick={async (e) => {
+                  e.stopPropagation();
                   if (!window.confirm('⚠️ Are you sure? This complaint will be permanently deleted and cannot be recovered.')) return;
                   try {
                     await axios.delete(`${API_BASE_URL}/api/complaints/${comp._id}`, {

@@ -7,6 +7,7 @@ import { API_BASE_URL } from '../config';
 const AdminPanel = () => {
   const [complaints, setComplaints] = useState([]);
   const [loading, setLoading] = useState(true);
+  const [selectedComplaint, setSelectedComplaint] = useState(null);
   const { user } = useAuth();
   const navigate = useNavigate();
 
@@ -56,6 +57,84 @@ const AdminPanel = () => {
 
   return (
     <div>
+      {/* ── Complaint Detail Modal ── */}
+      {selectedComplaint && (
+        <div style={{
+          position: 'fixed', top: 0, left: 0, width: '100vw', height: '100vh',
+          background: 'rgba(0,0,0,0.6)', backdropFilter: 'blur(8px)',
+          display: 'flex', justifyContent: 'center', alignItems: 'center', zIndex: 3000
+        }} onClick={() => setSelectedComplaint(null)}>
+          <div className="card animate-fade-in" style={{ maxWidth: '950px', width: '95%', maxHeight: '90vh', overflowY: 'auto', position: 'relative', background: 'var(--surface-color)', border: '1px solid var(--border)', zIndex: 3001, padding: '30px' }} onClick={e => e.stopPropagation()}>
+            <button onClick={() => setSelectedComplaint(null)} style={{ position: 'absolute', top: '15px', left: '15px', background: 'transparent', border: 'none', color: 'var(--text-secondary)', fontSize: '0.9rem', cursor: 'pointer' }}>← Back to Master Feed</button>
+            <button onClick={() => setSelectedComplaint(null)} style={{ position: 'absolute', top: '15px', right: '15px', background: 'transparent', border: 'none', color: 'var(--text-secondary)', fontSize: '1.2rem', cursor: 'pointer' }}>✖</button>
+
+            <div style={{ display: 'flex', gap: '30px', flexWrap: 'wrap', marginTop: '20px' }}>
+              {/* Left Side: Evidence Image */}
+              <div style={{ flex: '1 1 300px' }}>
+                {selectedComplaint.evidence ? (
+                  /\.(mp4|webm|mov|avi)$/i.test(selectedComplaint.evidence) ? (
+                    <video src={selectedComplaint.evidence} controls style={{ width: '100%', maxHeight: '450px', borderRadius: '8px', border: '1px solid var(--border)', background: 'rgba(0,0,0,0.3)' }} />
+                  ) : (
+                    <img src={selectedComplaint.evidence} alt="Evidence" style={{ width: '100%', height: 'auto', maxHeight: '450px', objectFit: 'contain', borderRadius: '8px', border: '1px solid var(--border)', background: 'rgba(0,0,0,0.3)' }} />
+                  )
+                ) : (
+                  <div style={{ width: '100%', height: '300px', borderRadius: '8px', border: '1px solid var(--border)', background: 'rgba(0,0,0,0.3)', display: 'flex', flexDirection: 'column', alignItems: 'center', justifyContent: 'center', color: 'var(--text-secondary)' }}>
+                    <span style={{ fontSize: '3rem', marginBottom: '10px', opacity: 0.4 }}>📷</span>
+                    <span style={{ fontSize: '0.9rem' }}>No evidence attached</span>
+                  </div>
+                )}
+              </div>
+
+              {/* Right Side: Structured Report Data */}
+              <div style={{ flex: '2 1 400px', display: 'flex', flexDirection: 'column', gap: '20px' }}>
+                {/* Incident Headline */}
+                <div style={{ background: 'rgba(0,0,0,0.2)', padding: '20px', borderRadius: '8px', border: '1px solid var(--border)' }}>
+                  <h4 style={{ color: 'var(--text-secondary)', fontSize: '0.85rem', textTransform: 'uppercase', letterSpacing: '1px', marginBottom: '8px' }}>Incident Headline</h4>
+                  <p style={{ color: 'var(--text-primary)', fontSize: '1.2rem', fontWeight: '500', margin: 0 }}>{selectedComplaint.title}</p>
+                </div>
+
+                {/* Location + Classification side by side */}
+                <div style={{ display: 'flex', gap: '20px', flexWrap: 'wrap' }}>
+                  <div style={{ flex: 1, background: 'rgba(0,0,0,0.2)', padding: '20px', borderRadius: '8px', border: '1px solid var(--border)', minWidth: '180px' }}>
+                    <h4 style={{ color: 'var(--text-secondary)', fontSize: '0.85rem', textTransform: 'uppercase', letterSpacing: '1px', marginBottom: '8px' }}>Location Details</h4>
+                    <p style={{ color: 'var(--text-primary)', margin: 0, fontSize: '1rem' }}>{selectedComplaint.location}</p>
+                  </div>
+                  <div style={{ flex: 1, background: 'rgba(0,0,0,0.2)', padding: '20px', borderRadius: '8px', border: '1px solid var(--border)', minWidth: '180px' }}>
+                    <h4 style={{ color: 'var(--text-secondary)', fontSize: '0.85rem', textTransform: 'uppercase', letterSpacing: '1px', marginBottom: '8px' }}>Malpractice Classification</h4>
+                    <p style={{ color: 'var(--danger)', fontWeight: 'bold', margin: 0, fontSize: '1rem' }}>{selectedComplaint.type.replace('_', ' ')}</p>
+                  </div>
+                </div>
+
+                {/* Full Description */}
+                <div style={{ background: 'rgba(0,0,0,0.2)', padding: '20px', borderRadius: '8px', border: '1px solid var(--border)', flex: 1 }}>
+                  <h4 style={{ color: 'var(--text-secondary)', fontSize: '0.85rem', textTransform: 'uppercase', letterSpacing: '1px', marginBottom: '12px' }}>Detailed Description of Events</h4>
+                  <p style={{ color: 'var(--text-secondary)', fontSize: '0.95rem', lineHeight: 1.6, margin: 0 }}>{selectedComplaint.description}</p>
+                </div>
+
+                {/* Status + Meta footer */}
+                <div style={{ display: 'flex', gap: '20px', flexWrap: 'wrap', alignItems: 'center' }}>
+                  <div style={{ background: 'rgba(0,0,0,0.2)', padding: '12px 20px', borderRadius: '8px', border: '1px solid var(--border)' }}>
+                    <span style={{ fontSize: '0.8rem', color: 'var(--text-secondary)', marginRight: '8px' }}>STATUS:</span>
+                    <span style={{ fontSize: '0.9rem', fontWeight: 'bold', color: getStatusColor(selectedComplaint.status) }}>{selectedComplaint.status.toUpperCase()}</span>
+                  </div>
+                  <div style={{ fontSize: '0.85rem', color: 'var(--text-secondary)' }}>
+                    Transmitted by User: <strong>{selectedComplaint.user?.name || 'Unknown Identity'}</strong> | 📅 {new Date(selectedComplaint.createdAt).toLocaleDateString()} | 🕒 {new Date(selectedComplaint.createdAt).toLocaleTimeString([], { hour: '2-digit', minute: '2-digit' })}
+                  </div>
+                </div>
+                
+                {/* Admin Status Actions inside Modal */}
+                {selectedComplaint.status === 'pending' && (
+                  <div style={{ marginTop: '10px', display: 'flex', gap: '15px' }}>
+                    <button onClick={() => { handleStatusUpdate(selectedComplaint._id, 'verified'); setSelectedComplaint(prev => ({...prev, status: 'verified'})); }} className="btn" style={{ background: 'var(--success)', color: 'black', padding: '10px 20px', fontSize: '0.9rem', flex: 1 }}>✅ Verify Override</button>
+                    <button onClick={() => { handleStatusUpdate(selectedComplaint._id, 'rejected'); setSelectedComplaint(prev => ({...prev, status: 'rejected'})); }} className="btn" style={{ background: 'transparent', border: '1px solid var(--danger)', color: 'var(--danger)', padding: '10px 20px', fontSize: '0.9rem', flex: 1 }}>❌ Flag False</button>
+                  </div>
+                )}
+              </div>
+            </div>
+          </div>
+        </div>
+      )}
+
       <div className="page-header">
         <h2 className="page-title">Security & Moderation Panel</h2>
         <p style={{ color: 'var(--text-secondary)' }}>Review incoming reports, analyze evidence logs, and govern verification statuses.</p>
@@ -91,7 +170,7 @@ const AdminPanel = () => {
         ) : (
           <div style={{ display: 'flex', flexDirection: 'column', gap: '15px' }}>
             {complaints.map((comp) => (
-              <div key={comp._id} className="flex-mobile-col" style={{ display: 'flex', justifyContent: 'space-between', padding: '15px', background: 'rgba(0,0,0,0.3)', borderRadius: '8px', borderLeft: `3px solid ${getStatusColor(comp.status)}` }}>
+              <div key={comp._id} className="flex-mobile-col" style={{ display: 'flex', justifyContent: 'space-between', padding: '15px', background: 'rgba(0,0,0,0.3)', borderRadius: '8px', borderLeft: `3px solid ${getStatusColor(comp.status)}`, cursor: 'pointer', transition: 'background-color 0.2s ease' }} onClick={() => setSelectedComplaint(comp)} onMouseOver={e => e.currentTarget.style.backgroundColor = 'rgba(255,255,255,0.05)'} onMouseOut={e => e.currentTarget.style.backgroundColor = 'rgba(0,0,0,0.3)'}>
                 <div style={{ flex: 1, paddingRight: '20px' }}>
                   <div className="flex items-center gap-10" style={{ marginBottom: '5px' }}>
                     <h4 style={{ margin: 0 }}>{comp.title}</h4>
@@ -103,7 +182,7 @@ const AdminPanel = () => {
                   </div>
                   {comp.evidence && (
                     <div style={{ marginTop: '10px' }}>
-                      <a href={comp.evidence} target="_blank" rel="noopener noreferrer" style={{ fontSize: '0.8rem', textDecoration: 'underline', color: 'var(--primary)' }}>Access Encrypted Upload Evidence</a>
+                      <a href={comp.evidence} target="_blank" rel="noopener noreferrer" style={{ fontSize: '0.8rem', textDecoration: 'underline', color: 'var(--primary)' }} onClick={e => e.stopPropagation()}>Access Encrypted Upload Evidence</a>
                     </div>
                   )}
                 </div>
@@ -114,8 +193,8 @@ const AdminPanel = () => {
                   </span>
                   {comp.status === 'pending' && (
                     <>
-                      <button onClick={() => handleStatusUpdate(comp._id, 'verified')} className="btn" style={{ background: 'var(--success)', color: 'black', padding: '8px', fontSize: '0.8rem' }}>Verify Override</button>
-                      <button onClick={() => handleStatusUpdate(comp._id, 'rejected')} className="btn" style={{ background: 'transparent', border: '1px solid var(--danger)', color: 'var(--danger)', padding: '6px', fontSize: '0.8rem' }}>Flag False</button>
+                      <button onClick={(e) => { e.stopPropagation(); handleStatusUpdate(comp._id, 'verified'); }} className="btn" style={{ background: 'var(--success)', color: 'black', padding: '8px', fontSize: '0.8rem' }}>Verify Override</button>
+                      <button onClick={(e) => { e.stopPropagation(); handleStatusUpdate(comp._id, 'rejected'); }} className="btn" style={{ background: 'transparent', border: '1px solid var(--danger)', color: 'var(--danger)', padding: '6px', fontSize: '0.8rem' }}>Flag False</button>
                     </>
                   )}
                 </div>
