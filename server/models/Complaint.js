@@ -17,15 +17,7 @@ const complaintSchema = new mongoose.Schema({
     },
     type: {
         type: String,
-        required: [true, 'Please specify the type of malpractice'],
-        enum: [
-            'bribery', 
-            'booth_capturing', 
-            'fake_voting', 
-            'voter_intimidation', 
-            'other',
-            'custom'
-        ]
+        required: [true, 'Please specify the type of malpractice']
     },
     evidence: {
         type: String, // Will store the file URL (Cloudinary or local upload path)
